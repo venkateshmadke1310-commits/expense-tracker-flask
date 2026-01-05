@@ -21,11 +21,16 @@ def setup_database():
     )
     """)
 
-    c.execute("PRAGMA table_info(expenses)")
-    columns = [info[1] for info in c.fetchall()]
-
-    if "user_id" not in columns:
-        c.execute("ALTER TABLE expenses ADD COLUMN user_id INTEGER")
+    c.execute("""
+    CREATE TABLE IF NOT EXISTS expenses (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        amount REAL,
+        category TEXT,
+        description TEXT,
+        date TEXT
+    )
+    """)
 
     conn.commit()
     conn.close()
@@ -42,29 +47,28 @@ def home():
     from_date = request.args.get("from_date")
     to_date = request.args.get("to_date")
 
-    query = "SELECT * FROM expenses WHERE user_id = ?"
-    total_query = "SELECT SUM(amount) FROM expenses WHERE user_id = ?"
+    query = "SELECT * FROM expenses WHERE user_id=?"
+    total_query = "SELECT SUM(amount) FROM expenses WHERE user_id=?"
     params = [user_id]
 
     if category:
-        query += " AND category = ?"
-        total_query += " AND category = ?"
+        query += " AND category=?"
+        total_query += " AND category=?"
         params.append(category)
     if from_date:
-        query += " AND date >= ?"
-        total_query += " AND date >= ?"
+        query += " AND date>=?"
+        total_query += " AND date>=?"
         params.append(from_date)
     if to_date:
-        query += " AND date <= ?"
-        total_query += " AND date <= ?"
+        query += " AND date<=?"
+        total_query += " AND date<=?"
         params.append(to_date)
 
     query += " ORDER BY date DESC"
 
     conn = get_db_connection()
     expenses = conn.execute(query, params).fetchall()
-    total = conn.execute(total_query, params).fetchone()[0]
-    total = total if total else 0
+    total = conn.execute(total_query, params).fetchone()[0] or 0
     conn.close()
 
     return render_template("view.html", expenses=expenses, total=total)
@@ -123,16 +127,16 @@ def add():
         return redirect("/login")
 
     if request.method == "POST":
-        amount = request.form["amount"]
-        category = request.form["category"]
-        description = request.form["description"]
-        date = request.form["date"]
-        user_id = session["user_id"]
-
         conn = get_db_connection()
         conn.execute(
             "INSERT INTO expenses (user_id, amount, category, description, date) VALUES (?, ?, ?, ?, ?)",
-            (user_id, amount, category, description, date)
+            (
+                session["user_id"],
+                request.form["amount"],
+                request.form["category"],
+                request.form["description"],
+                request.form["date"]
+            )
         )
         conn.commit()
         conn.close()
@@ -145,11 +149,10 @@ def edit(id):
     if "user_id" not in session:
         return redirect("/login")
 
-    user_id = session["user_id"]
     conn = get_db_connection()
     expense = conn.execute(
         "SELECT * FROM expenses WHERE id=? AND user_id=?",
-        (id, user_id)
+        (id, session["user_id"])
     ).fetchone()
 
     if not expense:
@@ -157,14 +160,16 @@ def edit(id):
         return "Not allowed", 403
 
     if request.method == "POST":
-        amount = request.form["amount"]
-        category = request.form["category"]
-        description = request.form["description"]
-        date = request.form["date"]
-
         conn.execute(
             "UPDATE expenses SET amount=?, category=?, description=?, date=? WHERE id=? AND user_id=?",
-            (amount, category, description, date, id, user_id)
+            (
+                request.form["amount"],
+                request.form["category"],
+                request.form["description"],
+                request.form["date"],
+                id,
+                session["user_id"]
+            )
         )
         conn.commit()
         conn.close()
@@ -178,11 +183,10 @@ def delete(id):
     if "user_id" not in session:
         return redirect("/login")
 
-    user_id = session["user_id"]
     conn = get_db_connection()
     conn.execute(
         "DELETE FROM expenses WHERE id=? AND user_id=?",
-        (id, user_id)
+        (id, session["user_id"])
     )
     conn.commit()
     conn.close()
@@ -193,11 +197,10 @@ def summary():
     if "user_id" not in session:
         return redirect("/login")
 
-    user_id = session["user_id"]
     conn = get_db_connection()
     data = conn.execute(
         "SELECT category, SUM(amount) AS total FROM expenses WHERE user_id=? GROUP BY category",
-        (user_id,)
+        (session["user_id"],)
     ).fetchall()
     conn.close()
 
@@ -208,16 +211,14 @@ def monthly_summary():
     if "user_id" not in session:
         return redirect("/login")
 
-    user_id = session["user_id"]
     conn = get_db_connection()
     data = conn.execute("""
-        SELECT strftime('%Y-%m', date) AS month,
-               SUM(amount) AS total
+        SELECT strftime('%Y-%m', date) AS month, SUM(amount) AS total
         FROM expenses
         WHERE user_id=?
         GROUP BY month
         ORDER BY month DESC
-    """, (user_id,)).fetchall()
+    """, (session["user_id"],)).fetchall()
     conn.close()
 
     return render_template("monthly.html", monthly=data)
@@ -227,14 +228,13 @@ def export_month(month):
     if "user_id" not in session:
         return redirect("/login")
 
-    user_id = session["user_id"]
     conn = get_db_connection()
     expenses = conn.execute("""
         SELECT date, amount, category, description
         FROM expenses
         WHERE strftime('%Y-%m', date)=? AND user_id=?
         ORDER BY date
-    """, (month, user_id)).fetchall()
+    """, (month, session["user_id"])).fetchall()
     conn.close()
 
     def generate():
