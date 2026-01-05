@@ -65,7 +65,7 @@ expense-tracker-flask/
 
 ```bash
 git clone https://github.com/venkateshmadke1310-commits/expense-tracker-flask.git
-cd expense-tracker-flask
+
 ```
 
 ### 2️⃣ Install dependencies
@@ -130,8 +130,6 @@ Python & Flask Developer
 ⭐ **If you like this project**
 
 Give it a ⭐ on GitHub — it motivates me to build more!
-
-```
 
 
 
