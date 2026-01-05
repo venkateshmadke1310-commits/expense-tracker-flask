@@ -9,6 +9,29 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
+def setup_database():
+    conn = sqlite3.connect("expenses.db")
+    c = conn.cursor()
+
+    c.execute("""
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT UNIQUE NOT NULL,
+        password TEXT NOT NULL
+    )
+    """)
+
+    c.execute("PRAGMA table_info(expenses)")
+    columns = [info[1] for info in c.fetchall()]
+
+    if "user_id" not in columns:
+        c.execute("ALTER TABLE expenses ADD COLUMN user_id INTEGER")
+
+    conn.commit()
+    conn.close()
+
+setup_database()
+
 @app.route("/")
 def home():
     if "user_id" not in session:
@@ -51,6 +74,7 @@ def register():
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
+
         conn = get_db_connection()
         try:
             conn.execute(
@@ -63,6 +87,7 @@ def register():
             return "Username already exists"
         conn.close()
         return redirect("/login")
+
     return render_template("register.html")
 
 @app.route("/login", methods=["GET", "POST"])
@@ -70,17 +95,21 @@ def login():
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
+
         conn = get_db_connection()
         user = conn.execute(
             "SELECT * FROM users WHERE username=? AND password=?",
             (username, password)
         ).fetchone()
         conn.close()
+
         if user:
             session["user_id"] = user["id"]
             session["username"] = user["username"]
             return redirect("/")
+
         return "Invalid login"
+
     return render_template("login.html")
 
 @app.route("/logout")
@@ -92,12 +121,14 @@ def logout():
 def add():
     if "user_id" not in session:
         return redirect("/login")
+
     if request.method == "POST":
         amount = request.form["amount"]
         category = request.form["category"]
         description = request.form["description"]
         date = request.form["date"]
         user_id = session["user_id"]
+
         conn = get_db_connection()
         conn.execute(
             "INSERT INTO expenses (user_id, amount, category, description, date) VALUES (?, ?, ?, ?, ?)",
@@ -106,26 +137,31 @@ def add():
         conn.commit()
         conn.close()
         return redirect("/")
+
     return render_template("add.html")
 
 @app.route("/edit/<int:id>", methods=["GET", "POST"])
 def edit(id):
     if "user_id" not in session:
         return redirect("/login")
+
     user_id = session["user_id"]
     conn = get_db_connection()
     expense = conn.execute(
-        "SELECT * FROM expenses WHERE id = ? AND user_id = ?",
+        "SELECT * FROM expenses WHERE id=? AND user_id=?",
         (id, user_id)
     ).fetchone()
+
     if not expense:
         conn.close()
         return "Not allowed", 403
+
     if request.method == "POST":
         amount = request.form["amount"]
         category = request.form["category"]
         description = request.form["description"]
         date = request.form["date"]
+
         conn.execute(
             "UPDATE expenses SET amount=?, category=?, description=?, date=? WHERE id=? AND user_id=?",
             (amount, category, description, date, id, user_id)
@@ -133,6 +169,7 @@ def edit(id):
         conn.commit()
         conn.close()
         return redirect("/")
+
     conn.close()
     return render_template("edit.html", expense=expense)
 
@@ -140,10 +177,11 @@ def edit(id):
 def delete(id):
     if "user_id" not in session:
         return redirect("/login")
+
     user_id = session["user_id"]
     conn = get_db_connection()
     conn.execute(
-        "DELETE FROM expenses WHERE id = ? AND user_id = ?",
+        "DELETE FROM expenses WHERE id=? AND user_id=?",
         (id, user_id)
     )
     conn.commit()
@@ -154,19 +192,22 @@ def delete(id):
 def summary():
     if "user_id" not in session:
         return redirect("/login")
+
     user_id = session["user_id"]
     conn = get_db_connection()
     data = conn.execute(
-        "SELECT category, SUM(amount) as total FROM expenses WHERE user_id=? GROUP BY category",
+        "SELECT category, SUM(amount) AS total FROM expenses WHERE user_id=? GROUP BY category",
         (user_id,)
     ).fetchall()
     conn.close()
+
     return render_template("summary.html", summary=data)
 
 @app.route("/monthly")
 def monthly_summary():
     if "user_id" not in session:
         return redirect("/login")
+
     user_id = session["user_id"]
     conn = get_db_connection()
     data = conn.execute("""
@@ -178,33 +219,34 @@ def monthly_summary():
         ORDER BY month DESC
     """, (user_id,)).fetchall()
     conn.close()
+
     return render_template("monthly.html", monthly=data)
 
 @app.route("/export/<month>")
 def export_month(month):
     if "user_id" not in session:
         return redirect("/login")
+
     user_id = session["user_id"]
     conn = get_db_connection()
     expenses = conn.execute("""
         SELECT date, amount, category, description
         FROM expenses
-        WHERE strftime('%Y-%m', date) = ? AND user_id = ?
+        WHERE strftime('%Y-%m', date)=? AND user_id=?
         ORDER BY date
     """, (month, user_id)).fetchall()
     conn.close()
+
     def generate():
         yield "Date,Amount,Category,Description\n"
         for e in expenses:
             yield f"{e['date']},{e['amount']},{e['category']},{e['description']}\n"
-    filename = f"expenses_{month}.csv"
+
     return Response(
         generate(),
         mimetype="text/csv",
-        headers={"Content-Disposition": f"attachment;filename={filename}"}
+        headers={"Content-Disposition": f"attachment; filename=expenses_{month}.csv"}
     )
 
 if __name__ == "__main__":
     app.run()
-
-
