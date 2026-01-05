@@ -1,56 +1,45 @@
-💰 Expense Tracker – Flask Web Application
+# 💰 Expense Tracker – Flask Web Application
 
-A full-stack Expense Tracker web application built using Python, Flask, SQLite, HTML, and CSS.
+A full-stack Expense Tracker web application built using **Python, Flask, SQLite, HTML, and CSS**.  
 The app allows users to securely manage their personal expenses with authentication, filtering, summaries, and CSV export.
 
-🔗 Live Demo:
+## 🔗 Live Demo
 https://expense-tracker-flask-1.onrender.com/login
 
-🚀 Features
+---
 
-🔐 User Registration & Login (Session-based authentication)
+## 🚀 Features
 
-➕ Add new expenses
+- 🔐 User Registration & Login (Session-based authentication)
+- ➕ Add new expenses
+- ✏️ Edit existing expenses
+- 🗑️ Delete expenses
+- 🔍 Filter expenses by category and date range
+- 📊 Category-wise expense summary
+- 📅 Monthly expense summary
+- 📁 Export monthly expenses as CSV
+- 👤 User-specific data isolation
+- 📱 Responsive UI (Desktop & Mobile)
 
-✏️ Edit existing expenses
+---
 
-🗑️ Delete expenses
+## 🛠️ Tech Stack
 
-🔍 Filter expenses by:
+- **Backend:** Python, Flask  
+- **Database:** SQLite  
+- **Frontend:** HTML, CSS  
+- **Authentication:** Flask Sessions  
+- **Deployment:** Render  
+- **Version Control:** Git & GitHub  
 
-Category
+---
 
-Date range
+## 📂 Project Structure
 
-📊 Category-wise summary
-
-📅 Monthly expense summary
-
-📁 Export monthly expenses as CSV
-
-👤 User-specific data isolation (each user sees only their data)
-
-📱 Responsive UI (works on desktop & mobile)
-
-🛠️ Tech Stack
-
-Backend: Python, Flask
-
-Database: SQLite
-
-Frontend: HTML, CSS
-
-Authentication: Flask sessions
-
-Deployment: Render
-
-Version Control: Git & GitHub
-
-📂 Project Structure
+```text
 expense-tracker-flask/
 │
 ├── app.py
-├── expenses.db
 ├── requirements.txt
 ├── templates/
 │   ├── base.html
@@ -68,25 +57,16 @@ expense-tracker-flask/
 └── README.md
 
 ⚙️ Setup Instructions (Local)
+1. Clone the repository
+https://github.com/venkateshmadke1310-commits/expense-tracker-flask.git
 
-Clone the repository
-
-git clone https://github.com/your-username/expense-tracker-flask.git
-cd expense-tracker-flask
-
-
-Install dependencies
-
+2. Install dependencies
 pip install -r requirements.txt
 
-
-Run the application
-
+3. Run the application
 python app.py
 
-
-Open in browser
-
+4. Open in browser
 http://127.0.0.1:5000/login
 
 🔐 Authentication Flow
@@ -115,7 +95,7 @@ Password hashing (bcrypt)
 
 Pagination for large expense lists
 
-Charts & analytics (Matplotlib / Chart.js)
+Charts & analytics (Chart.js)
 
 Admin dashboard
 
