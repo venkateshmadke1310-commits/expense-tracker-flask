@@ -1,42 +1,29 @@
-# 💰 Expense Tracker – Flask Web Application
-
-A full-stack Expense Tracker web application built using **Python, Flask, SQLite, HTML, and CSS**.  
+💰 Expense Tracker – Flask Web Application
+A full-stack Expense Tracker web application built using Python, Flask, SQLite, HTML, and CSS.
 The app allows users to securely manage their personal expenses with authentication, filtering, summaries, and CSV export.
 
-## 🔗 Live Demo
+🔗 Live Demo
 https://expense-tracker-flask-1.onrender.com/login
 
----
-
-## 🚀 Features
-
-- 🔐 User Registration & Login (Session-based authentication)
-- ➕ Add new expenses
-- ✏️ Edit existing expenses
-- 🗑️ Delete expenses
-- 🔍 Filter expenses by category and date range
-- 📊 Category-wise expense summary
-- 📅 Monthly expense summary
-- 📁 Export monthly expenses as CSV
-- 👤 User-specific data isolation
-- 📱 Responsive UI (Desktop & Mobile)
-
----
-
-## 🛠️ Tech Stack
-
-- **Backend:** Python, Flask  
-- **Database:** SQLite  
-- **Frontend:** HTML, CSS  
-- **Authentication:** Flask Sessions  
-- **Deployment:** Render  
-- **Version Control:** Git & GitHub  
-
----
-
-## 📂 Project Structure
-
-```text
+🚀 Features
+🔐 User Registration & Login (Session-based authentication)
+➕ Add new expenses
+✏️ Edit existing expenses
+🗑️ Delete expenses
+🔍 Filter expenses by category and date range
+📊 Category-wise expense summary
+📅 Monthly expense summary
+📁 Export monthly expenses as CSV
+👤 User-specific data isolation
+📱 Responsive UI (Desktop & Mobile)
+🛠️ Tech Stack
+Backend: Python, Flask
+Database: SQLite
+Frontend: HTML, CSS
+Authentication: Flask Sessions
+Deployment: Render
+Version Control: Git & GitHub
+📂 Project Structure
 expense-tracker-flask/
 │
 ├── app.py
@@ -55,18 +42,18 @@ expense-tracker-flask/
 │   └── style.css
 │
 └── README.md
-```
 ⚙️ Setup Instructions (Local)
-1. Clone the repository
+
+Clone the repository
 https://github.com/venkateshmadke1310-commits/expense-tracker-flask.git
 
-2. Install dependencies
+Install dependencies
 pip install -r requirements.txt
 
-3. Run the application
+Run the application
 python app.py
 
-4. Open in browser
+Open in browser
 http://127.0.0.1:5000/login
 
 🔐 Authentication Flow
@@ -105,9 +92,7 @@ Dark mode UI
 
 👨‍💻 Author
 
-Venkatesh Madke
-Python & Flask Developer
-📌 LinkedIn: https://www.linkedin.com/in/venkatesh-madke-675760375/
+Venkatesh Madke Python & Flask Developer 📌 LinkedIn: https://www.linkedin.com/in/venkatesh-madke-675760375/
 
 ⭐ If you like this project
 
