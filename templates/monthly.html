@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-container">
+
+    <h2>Monthly Expense Summary</h2>
+
+    <table class="styled-table">
+        <tr>
+            <th>Month</th>
+            <th>Total Amount (₹)</th>
+            <th>Action</th>
+        </tr>
+
+        {% for row in monthly %}
+        <tr>
+            <td>{{ row.month }}</td>
+            <td>{{ row.total }}</td>
+            <td>
+                <a href="/export/{{ row.month }}" class="btn-link">
+                    Download CSV
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <br>
+    <a href="/" class="back-link">← Back to Home</a>
+
+</div>
+{% endblock %}
+
+

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Category-wise Expense Summary</h2>
+
+<table border="1" cellpadding="5" cellspacing="0">
+    <tr>
+        <th>Category</th>
+        <th>Total Amount</th>
+    </tr>
+
+    {% for row in summary %}
+    <tr>
+        <td>{{ row.category }}</td>
+        <td>{{ row.total }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<br>
+<a href="/">Back to Home</a>
+{% endblock %}
