@@ -55,7 +55,7 @@ expense-tracker-flask/
 │   └── style.css
 │
 └── README.md
-
+```
 ⚙️ Setup Instructions (Local)
 1. Clone the repository
 https://github.com/venkateshmadke1310-commits/expense-tracker-flask.git
