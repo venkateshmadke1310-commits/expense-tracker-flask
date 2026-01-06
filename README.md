@@ -6,6 +6,8 @@ The app allows users to securely manage their personal expenses with authenticat
 ## 🔗 Live Demo
 https://expense-tracker-flask-1.onrender.com/login
 
+ℹ️ Note: Deployed on Render (free tier). Initial load may take up to 1 minute due to cold start.
+
 ---
 
 ## 🚀 Features
