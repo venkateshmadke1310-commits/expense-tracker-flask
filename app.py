@@ -32,6 +32,15 @@ def setup_database():
     )
     """)
 
+    c.execute("""
+    CREATE TABLE IF NOT EXISTS limits (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        category TEXT,
+        limit_amount REAL
+    )
+    """)
+
     conn.commit()
     conn.close()
 
@@ -76,14 +85,11 @@ def home():
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
-        username = request.form["username"]
-        password = request.form["password"]
-
         conn = get_db_connection()
         try:
             conn.execute(
                 "INSERT INTO users (username, password) VALUES (?, ?)",
-                (username, password)
+                (request.form["username"], request.form["password"])
             )
             conn.commit()
         except sqlite3.IntegrityError:
@@ -91,19 +97,15 @@ def register():
             return "Username already exists"
         conn.close()
         return redirect("/login")
-
     return render_template("register.html")
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        username = request.form["username"]
-        password = request.form["password"]
-
         conn = get_db_connection()
         user = conn.execute(
             "SELECT * FROM users WHERE username=? AND password=?",
-            (username, password)
+            (request.form["username"], request.form["password"])
         ).fetchone()
         conn.close()
 
@@ -111,7 +113,6 @@ def login():
             session["user_id"] = user["id"]
             session["username"] = user["username"]
             return redirect("/")
-
         return "Invalid login"
 
     return render_template("login.html")
@@ -126,14 +127,35 @@ def add():
     if "user_id" not in session:
         return redirect("/login")
 
+    error = None
+
     if request.method == "POST":
+        amount = float(request.form["amount"])
+        category = request.form["category"]
+
         conn = get_db_connection()
+        limit_row = conn.execute(
+            "SELECT limit_amount FROM limits WHERE user_id=? AND category=?",
+            (session["user_id"], category)
+        ).fetchone()
+
+        if limit_row:
+            current_total = conn.execute(
+                "SELECT SUM(amount) FROM expenses WHERE user_id=? AND category=?",
+                (session["user_id"], category)
+            ).fetchone()[0] or 0
+
+            if current_total + amount > limit_row["limit_amount"]:
+                conn.close()
+                error = f"Expense limit exceeded for {category}. Limit: ₹{limit_row['limit_amount']}"
+                return render_template("add.html", error=error)
+
         conn.execute(
             "INSERT INTO expenses (user_id, amount, category, description, date) VALUES (?, ?, ?, ?, ?)",
             (
                 session["user_id"],
-                request.form["amount"],
-                request.form["category"],
+                amount,
+                category,
                 request.form["description"],
                 request.form["date"]
             )
@@ -142,7 +164,7 @@ def add():
         conn.close()
         return redirect("/")
 
-    return render_template("add.html")
+    return render_template("add.html", error=error)
 
 @app.route("/edit/<int:id>", methods=["GET", "POST"])
 def edit(id):
@@ -159,12 +181,33 @@ def edit(id):
         conn.close()
         return "Not allowed", 403
 
+    error = None
+
     if request.method == "POST":
+        amount = float(request.form["amount"])
+        category = request.form["category"]
+
+        limit_row = conn.execute(
+            "SELECT limit_amount FROM limits WHERE user_id=? AND category=?",
+            (session["user_id"], category)
+        ).fetchone()
+
+        if limit_row:
+            current_total = conn.execute(
+                "SELECT SUM(amount) FROM expenses WHERE user_id=? AND category=? AND id!=?",
+                (session["user_id"], category, id)
+            ).fetchone()[0] or 0
+
+            if current_total + amount > limit_row["limit_amount"]:
+                conn.close()
+                error = f"Expense limit exceeded for {category}. Limit: ₹{limit_row['limit_amount']}"
+                return render_template("edit.html", expense=expense, error=error)
+
         conn.execute(
             "UPDATE expenses SET amount=?, category=?, description=?, date=? WHERE id=? AND user_id=?",
             (
-                request.form["amount"],
-                request.form["category"],
+                amount,
+                category,
                 request.form["description"],
                 request.form["date"],
                 id,
@@ -247,6 +290,40 @@ def export_month(month):
         mimetype="text/csv",
         headers={"Content-Disposition": f"attachment; filename=expenses_{month}.csv"}
     )
+
+@app.route("/set_limit", methods=["GET", "POST"])
+def set_limit():
+    if "user_id" not in session:
+        return redirect("/login")
+
+    message = None
+
+    if request.method == "POST":
+        category = request.form["category"]
+        limit_amount = float(request.form["limit"])
+
+        conn = get_db_connection()
+        existing = conn.execute(
+            "SELECT * FROM limits WHERE user_id=? AND category=?",
+            (session["user_id"], category)
+        ).fetchone()
+
+        if existing:
+            conn.execute(
+                "UPDATE limits SET limit_amount=? WHERE user_id=? AND category=?",
+                (limit_amount, session["user_id"], category)
+            )
+        else:
+            conn.execute(
+                "INSERT INTO limits (user_id, category, limit_amount) VALUES (?, ?, ?)",
+                (session["user_id"], category, limit_amount)
+            )
+
+        conn.commit()
+        conn.close()
+        message = "Limit set successfully"
+
+    return render_template("set_limit.html", message=message)
 
 if __name__ == "__main__":
     app.run()
