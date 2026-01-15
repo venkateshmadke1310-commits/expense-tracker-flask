@@ -1,7 +1,7 @@
 # 💰 Expense Tracker – Flask Web Application
 
 A full-stack Expense Tracker web application built using **Python, Flask, SQLite, HTML, and CSS**.  
-The app allows users to securely manage their personal expenses with authentication, filtering, summaries, and CSV export.
+The app allows users to securely manage their personal expenses with authentication, filtering, summaries, category-wise expense limits, and CSV export.
 
 ## 🔗 Live Demo
 https://expense-tracker-flask-1.onrender.com/login
@@ -20,8 +20,38 @@ https://expense-tracker-flask-1.onrender.com/login
 - 📊 Category-wise expense summary
 - 📅 Monthly expense summary
 - 📁 Export monthly expenses as CSV
+- 🎯 Category-wise Expense Limit feature
+   - Set a spending limit for each category
+   - Prevents adding or editing expenses beyond the set limit
+   - User-wise and category-wise enforcement
 - 👤 User-specific data isolation
 - 📱 Responsive UI (Desktop & Mobile)
+
+---
+
+## 🎯 Expense Limit Feature (New)
+
+The application supports category-wise expense limits for better budget control.
+
+### How it works:
+
+ - Users can set a maximum spending limit for any category (e.g., Food, Travel).
+
+ - When adding or editing an expense:
+
+   - The system checks the total amount already spent in that category.
+
+   - If the new expense exceeds the set limit, the action is blocked.
+
+   - A clear error message is displayed to the user.
+
+- Limits are:
+
+   - User-specific
+
+   - Editable anytime
+
+   - Enforced at backend level (Flask)
 
 ---
 
@@ -51,7 +81,8 @@ expense-tracker-flask/
 │   ├── add.html
 │   ├── edit.html
 │   ├── summary.html
-│   └── monthly.html
+│   ├── monthly.html
+│   └── set_limit.html
 │
 ├── static/
 │   └── style.css
@@ -116,6 +147,7 @@ http://127.0.0.1:5000/login
 * Admin dashboard
 * Cloud database (PostgreSQL)
 * Dark mode UI
+* Monthly expense limits
 
 ---
 
